@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 from translate import Translator
 import re
-from geojson import Point, Feature, FeatureCollection, dump
 
 translator= Translator(to_lang="it")
 
@@ -10,9 +9,8 @@ def extract_text(url):
     try:
         response = requests.get(url=url,)
         soup = BeautifulSoup(response.content, 'html.parser')
-        heading = soup.find(id="firstHeading")
-        title = heading.text
-        print(f'Processing {title}')
+        # heading = soup.find(id="firstHeading")
+        # title = heading.text
         text = []
         parafs = soup.find_all("p", recursive=True)
         for p in parafs:

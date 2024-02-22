@@ -1,4 +1,7 @@
-from wikidata import *
+import logging
+import os
+from geojson import Point, Feature, FeatureCollection, dump
+from wikidata import WikiDataQueryResults
 from utils import *
 from llm import *
 
@@ -27,22 +30,38 @@ ORDER BY ASC (?name)
 """
    data_extracter = WikiDataQueryResults(query)
    data = data_extracter._load()
-   features = []
-   for doc in data[:5]:
+   logging.info(f'Starting job. {len(data)} articles to process')
+   for index, doc in enumerate(data):
             name = doc.get('name')
-            url = doc.get('article')
-            lon = float(doc.get('lon'))
-            lat = float(doc.get('lat'))
-            geometry = Point([lon, lat])
-            text = extract_text(url)
-            summ_en, summ_ita = summarize(text, translate=False)
-            # print(name, '\n')
-            # print(summ_en, '\n')
-            # print(summ_ita, '\n')
-            features.append(Feature(geometry=geometry, properties={"name": name, "summary_en": summ_en, "summ_ita": summ_ita}))
-   feature_collection = FeatureCollection(features)
-   with open(f'{q_id}.geojson', 'w') as f:
-      dump(feature_collection, f)
+            if name + '.geojson' not in os.listdir('output/'):
+               logging.debug(f'Started processing wiki article: {name}')
+               features = []
+               url = doc.get('article')
+               lon = float(doc.get('lon'))
+               lat = float(doc.get('lat'))
+               geometry = Point([lon, lat])
+               text = extract_text(url)
+               summ_en, summ_ita, tags = summs_tags(text)
+               features.append(Feature(geometry=geometry, properties={"name": name, "summary_en": summ_en, "summ_ita": summ_ita, "tags": tags}))
+               feature_collection = FeatureCollection(features)
+               name = name.replace('/', '_').replace(' ', '_')
+               with open(f'output/{name}.geojson', 'w') as f:
+                  dump(feature_collection, f)
+               logging.debug(f'Finished summarizing and extracting tags for: {name}')
+            else:
+                logging.debug(f'Skipping {name}.geojson as it was already in output/ folder')
+            percentage = ((index + 1) / len(data)) * 100
+            logging.debug(f'Job at {percentage}%')
+   logging.info(f'Done generating geojson files for {q_id}')
                       
 if __name__ == '__main__':
-   job(Q_ID)
+   logger = logging.getLogger()    
+   file_handler = logging.FileHandler(filename="logfile.log", mode="w")
+   formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(name)s : %(message)s")
+   file_handler.setFormatter(formatter)
+   logger.addHandler(file_handler)
+   logger.setLevel(logging.DEBUG)
+   try:
+      job(Q_ID)
+   except Exception as e:
+       print(f'Error: {str(e)}')
