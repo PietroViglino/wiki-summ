@@ -33,7 +33,7 @@ ORDER BY ASC (?name)
    logging.info(f'Starting job. {len(data)} articles to process')
    for index, doc in enumerate(data):
             name = doc.get('name')
-            if name + '.geojson' not in os.listdir('output/'):
+            if name.replace('/', '_').replace(' ', '_') + '.geojson' not in os.listdir('output/'):
                logging.debug(f'Started processing wiki article: {name}')
                features = []
                url = doc.get('article')
