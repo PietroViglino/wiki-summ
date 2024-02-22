@@ -1,0 +1,5 @@
+LLM/*
+.venv
+riassunti/*
+summaries/*
+__pycache__
