@@ -87,4 +87,7 @@ def summs_tags(text):
     # tags from string to list
     tags = list(set([_.strip() for _ in tags.split('|') if _ != '' and len(_) < 25]))
     tags = [_ for _ in tags if _ != '']
+    # formatting text
+    summ_cleaned = summ_cleaned.encode('utf8').decode('utf8')
+    trad = trad.encode('utf8').decode('utf8')
     return summ_cleaned, trad, tags
