@@ -1,11 +1,9 @@
 from llama_cpp import Llama
 from deep_translator import GoogleTranslator
-from utils import split_text
-import unicodedata
+from modules.utils import split_text
 
 N_CTX=1200
 LLM=Llama(model_path='LLM/llama-2-7b-chat.Q4_K_M.gguf', n_gpu_layers=-1, n_ctx=2048)
-
 
 def simple_summ(text):
     system_message = "Generate a summary of the following text.\
@@ -86,5 +84,8 @@ def summs_tags(text):
         trad += GoogleTranslator(source='en', target='it').translate(block) + ' '
     # tags from string to list
     tags = list(set([_.strip() for _ in tags.split('|') if _ != '' and len(_) < 25]))
-    tags = [_ for _ in tags if _ != '']
+    # formatting all strings
+    tags = [_.encode('utf8').decode('utf8') for _ in tags if _ != '']
+    summ_cleaned = summ_cleaned.encode('utf8').decode('utf8')
+    trad = trad.encode('utf8').decode('utf8')
     return summ_cleaned, trad, tags

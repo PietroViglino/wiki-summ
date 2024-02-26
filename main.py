@@ -1,11 +1,12 @@
 import logging
 import os
 from geojson import Point, Feature, FeatureCollection, dump
-from wikidata import WikiDataQueryResults
-from utils import *
-from llm import *
+from modules.wikidata import WikiDataQueryResults
+from modules.utils import *
+from modules.llm import *
 
-Q_ID = 'Q1449'
+Q_ID = 'Q1449' # Genova
+# Q_ID = 'Q495' # Torino
 
 def job(q_id):
    query= f"""
@@ -31,11 +32,11 @@ ORDER BY ASC (?name)
    data_extracter = WikiDataQueryResults(query)
    data = data_extracter._load()
    logging.info(f'Starting job. {len(data)} articles to process')
-   for index, doc in enumerate(data):
+   features = []
+   for index, doc in enumerate(data[100:110]):
             name = doc.get('name')
             if name.replace('/', '_').replace(' ', '_') + '.geojson' not in os.listdir('output/'):
                logging.debug(f'Started processing wiki article: {name}')
-               features = []
                url = doc.get('article')
                lon = float(doc.get('lon'))
                lat = float(doc.get('lat'))
@@ -43,15 +44,15 @@ ORDER BY ASC (?name)
                text = extract_text(url)
                summ_en, summ_ita, tags = summs_tags(text)
                features.append(Feature(geometry=geometry, properties={"name": name, "summary_en": summ_en, "summ_ita": summ_ita, "tags": tags}))
-               feature_collection = FeatureCollection(features)
-               name = name.replace('/', '_').replace(' ', '_')
-               with open(f'output/{name}.geojson', 'w') as f:
-                  dump(feature_collection, f)
                logging.debug(f'Finished summarizing and extracting tags for: {name}')
             else:
                 logging.debug(f'Skipping {name}.geojson as it was already in output/ folder')
             percentage = ((index + 1) / len(data)) * 100
             logging.debug(f'Job at {percentage}%')
+   feature_collection = FeatureCollection(features)
+   q_id =q_id.replace('/', '_').replace(' ', '_')
+   with open(f'output/poi_{q_id}.geojson', 'w') as f:
+         dump(feature_collection, f)
    logging.info(f'Done generating geojson files for {q_id}')
                       
 if __name__ == '__main__':
