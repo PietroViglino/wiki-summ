@@ -3,7 +3,7 @@ installare NVIDIA CUDA Toolkit
 per verificare se l'installazione è avvenuta correttamente:
     nvcc.exe -V
 
-dal terminal:
+dal terminale (powershell):
     $env:set="FORCE_CMAKE=1"
     $env:CMAKE_ARGS="-DLLAMA_CUBLAS=on"     
     pip install llama-cpp-python --force-reinstall --upgrade --no-cache-dir --verbose  

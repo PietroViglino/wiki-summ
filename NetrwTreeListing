@@ -1,0 +1,14 @@
+../
+wiki-summ/
+| .git/
+| .venv/
+| LLM/
+| __pycache__/
+| example_output/
+| modules/
+| output/
+| .gitignore
+| llama_installation.txt
+| logfile.log
+| main.py
+| requirements.txt
